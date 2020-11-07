@@ -26,12 +26,38 @@ namespace Message_Counter_V2._0
             GetMessageGroups(folderBrowserDialog1.SelectedPath + "\\messages\\inbox");
         }
 
-        private void GetMessageGroups(string path) {
+        private void GetMessageGroups(string path)
+        {
             messageGroups = Directory.GetDirectories(path);
+            foreach (var item in messageGroups)
+            {
+                dataGridView1.Rows.Add((item.Split('\\').Last()).Split('_').First());
+            }
             if (messageGroups.Count() != 0 && backgroundWorker1.IsBusy == false)
             {
                 backgroundWorker1.RunWorkerAsync();
             }
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            foreach (var conversation in messageGroups)
+            {
+                CountMessages(Directory.GetFiles(conversation));
+            }
+        }
+
+        private void CountMessages(string[] parts)
+        {
+
+        }
+
+        private void GetName() { 
+        
+        }
+
+        private void GetCount() { 
+        
         }
     }
 }
