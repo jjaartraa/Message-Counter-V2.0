@@ -10,12 +10,15 @@ namespace Message_Counter_V2._0
     class MessageHandler
     {
         Conversation conversation = new Conversation();
-        public void ProcessMessages(string[] messages)
+        public void ProcessMessages(string[] docPaths)
         {
             var doc = new HtmlAgilityPack.HtmlDocument();
-            doc.Load(messages.First());
+            doc.Load(docPaths.First());
             conversation.name = GetName(doc);
             conversation.lastMessage = GetLastDate(doc);
+            conversation.messages = GetCount(docPaths);
+            doc.Load(docPaths.Last());
+            conversation.firstMessage = GetLastDate(doc);
 
         }
 
@@ -28,23 +31,24 @@ namespace Message_Counter_V2._0
 
         private string GetLastDate(HtmlDocument doc)
         {
-            /* get name & first message from first path
-                ConvName = doc.DocumentNode.SelectSingleNode("//head/title").InnerText;
-                byte[] bytes = Encoding.Default.GetBytes(ConvName);
-                ConvName = Encoding.UTF8.GetString(bytes);
-             */
-
-            return "";
+                return doc.DocumentNode.SelectSingleNode("//div[@class='_3-94 _2lem']").InnerText;
         }
 
-        private int GetCount(HtmlDocument[] documents)
+        private string GetFirstDate(HtmlDocument doc)
         {
-            foreach (var doc in documents)
+            return doc.DocumentNode.SelectNodes("//div[@class='_3-94 _2lem']").Last().InnerText;
+        }
+
+        private int GetCount(string[] docPaths)
+        {
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            int messages = 0;
+            foreach (var path in docPaths)
             {
-                conversation.messages += 0;
-                //var CountNode = doc.DocumentNode.SelectNodes();
+                doc.Load(path);
+                messages += doc.DocumentNode.SelectNodes("//div[@class='_3-96 _2let']").Count;
             }
-            return 0;
+            return messages;
         }
 
         private Conversation GetConversation()
