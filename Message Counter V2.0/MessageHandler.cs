@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Message_Counter_V2._0
@@ -10,16 +11,18 @@ namespace Message_Counter_V2._0
     class MessageHandler
     {
         Conversation conversation = new Conversation();
-        public void ProcessMessages(string[] docPaths)
+        public Conversation ProcessMessages(string[] docPaths)
         {
+            Array.Sort(docPaths, (a, b) => int.Parse(Regex.Replace(a, "[^0-9]", "")) - int.Parse(Regex.Replace(b, "[^0-9]", "")));
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.Load(docPaths.First());
             conversation.name = GetName(doc);
             conversation.lastMessage = GetLastDate(doc);
             conversation.messages = GetCount(docPaths);
             doc.Load(docPaths.Last());
-            conversation.firstMessage = GetLastDate(doc);
+            conversation.firstMessage = GetFirstDate(doc);
 
+            return conversation;
         }
 
         private string GetName(HtmlDocument doc)
@@ -31,7 +34,11 @@ namespace Message_Counter_V2._0
 
         private string GetLastDate(HtmlDocument doc)
         {
-                return doc.DocumentNode.SelectSingleNode("//div[@class='_3-94 _2lem']").InnerText;
+            if (doc.DocumentNode.SelectSingleNode("//div[@class='_2lek']") is null)
+            {
+                return doc.DocumentNode.SelectNodes("//div[@class='_3-94 _2lem']").First().InnerText;
+            }
+                return doc.DocumentNode.SelectNodes("//div[@class='_3-94 _2lem']").ElementAt(1).InnerText;
         }
 
         private string GetFirstDate(HtmlDocument doc)
@@ -49,6 +56,15 @@ namespace Message_Counter_V2._0
                 messages += doc.DocumentNode.SelectNodes("//div[@class='_3-96 _2let']").Count;
             }
             return messages;
+        }
+
+        private string GetParticipants(HtmlDocument doc)
+        {
+            if (doc.DocumentNode.SelectSingleNode("//div[@class='_2lek']") is null)
+            {
+                return "";
+            }
+            return doc.DocumentNode.SelectSingleNode("//div[@class='_2lek']").InnerText;
         }
 
         private Conversation GetConversation()

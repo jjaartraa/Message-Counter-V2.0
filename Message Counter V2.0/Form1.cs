@@ -23,16 +23,7 @@ namespace Message_Counter_V2._0
         private void Form1_Load(object sender, EventArgs e)
         {
             folderBrowserDialog1.ShowDialog();
-            GetMessageGroups(folderBrowserDialog1.SelectedPath + "\\messages\\inbox");
-        }
-
-        private void GetMessageGroups(string path)
-        {
-            messageGroups = Directory.GetDirectories(path);
-            foreach (var item in messageGroups)
-            {
-                dataGridView1.Rows.Add((item.Split('\\').Last()).Split('_').First());
-            }
+            messageGroups = Directory.GetDirectories(folderBrowserDialog1.SelectedPath + "\\messages\\inbox");
             if (messageGroups.Count() != 0 && backgroundWorker1.IsBusy == false)
             {
                 backgroundWorker1.RunWorkerAsync();
@@ -43,21 +34,16 @@ namespace Message_Counter_V2._0
         {
             foreach (var conversation in messageGroups)
             {
-                CountMessages(Directory.GetFiles(conversation));
+                MessageHandler messageHandler = new MessageHandler();
+                AddConversationsToTable(messageHandler.ProcessMessages(Directory.GetFiles(conversation)));
             }
         }
 
-        private void CountMessages(string[] parts)
+        private void AddConversationsToTable(Conversation conv)
         {
-
-        }
-
-        private void GetName() { 
-        
-        }
-
-        private void GetCount() { 
-        
+            this.Invoke((MethodInvoker)delegate {
+                dataGridView1.Rows.Add(conv.name, conv.firstMessage, conv.lastMessage, conv.messages);
+            });
         }
     }
 }
